@@ -1,0 +1,112 @@
+export const translations = {
+  en: {
+    title: 'MAXY BMC AI',
+    subtitle: 'ACADEMY',
+    tutorial: 'Tutorial',
+    load: 'Load',
+    save: 'Save',
+    saved: 'Saved!',
+    loaded: 'Loaded!',
+    mission: 'Mission',
+    completeAll: 'Complete all blocks for analysis',
+    back: 'Back',
+    next: 'Next',
+    analyzeNow: 'Analyze Now',
+    keyMission: 'Key for this mission:',
+    aiMentorAnalysis: 'AI Mentor Analysis',
+    analysisDescription: 'Here is comprehensive feedback for your business model.',
+    analyzing: 'AI Mentor is analyzing your business model...',
+    vitalSigns: 'Business Vital Signs',
+    strengths: 'Strengths',
+    weaknesses: 'Weaknesses/Risks',
+    opportunities: 'Opportunities',
+    threats: 'Threats',
+    feedback: 'Feedback & Strategic Advice',
+    conclusion: 'Conclusion',
+    goPitch: 'Create Elevator Pitch',
+    exportDoc: 'Export to Word',
+    elevatorPitch: 'Elevator Pitch',
+    pitchDescription: 'Your AI-generated pitch for investors and partners.',
+    generatingPitch: 'Generating your pitch...',
+    pitchStructure: {
+      hook: 'Hook',
+      problem: 'Problem',
+      solution: 'Solution & Unfair Advantage',
+      impact: 'Impact',
+      market: 'Market & Traction',
+      cta: 'Call to Action'
+    },
+    canvasLabels: {
+      kp: 'Key Partnerships',
+      ka: 'Key Activities',
+      vp: 'Value Propositions',
+      cr: 'Customer Relationships',
+      cs: 'Customer Segments',
+      kr: 'Key Resources',
+      ch: 'Channels',
+      cost: 'Cost Structure',
+      rev: 'Revenue Streams'
+    },
+    zones: {
+      feasibility: 'Feasibility',
+      desirability: 'Desirability',
+      viability: 'Viability'
+    }
+  },
+  id: {
+    title: 'MAXY BMC AI',
+    subtitle: 'ACADEMY',
+    tutorial: 'Tutorial',
+    load: 'Muat',
+    save: 'Simpan',
+    saved: 'Tersimpan!',
+    loaded: 'Dimuat!',
+    mission: 'Misi',
+    completeAll: 'Lengkapi semua blok untuk analisa',
+    back: 'Kembali',
+    next: 'Selanjutnya',
+    analyzeNow: 'Analisa Sekarang',
+    keyMission: 'Kunci Misi Ini:',
+    aiMentorAnalysis: 'Analisa AI Mentor',
+    analysisDescription: 'Berikut adalah feedback komprehensif untuk model bisnis Anda.',
+    analyzing: 'AI Mentor sedang menganalisa model bisnis Anda...',
+    vitalSigns: 'Business Vital Signs',
+    strengths: 'Kekuatan (Strengths)',
+    weaknesses: 'Kritik & Risiko (Weaknesses)',
+    opportunities: 'Peluang (Opportunities)',
+    threats: 'Ancaman (Threats)',
+    feedback: 'Feedback & Saran Strategis',
+    conclusion: 'Kesimpulan',
+    goPitch: 'Buat Elevator Pitch',
+    exportDoc: 'Ekspor ke Word',
+    elevatorPitch: 'Elevator Pitch',
+    pitchDescription: 'Pitch yang dihasilkan AI untuk investor dan mitra.',
+    generatingPitch: 'Sedang membuat pitch...',
+    pitchStructure: {
+      hook: 'Hook',
+      problem: 'Masalah',
+      solution: 'Solusi & Unfair Advantage',
+      impact: 'Dampak',
+      market: 'Pasar & Traksi',
+      cta: 'Call to Action'
+    },
+    canvasLabels: {
+      kp: 'Key Partnerships',
+      ka: 'Key Activities',
+      vp: 'Value Propositions',
+      cr: 'Customer Relationships',
+      cs: 'Customer Segments',
+      kr: 'Key Resources',
+      ch: 'Channels',
+      cost: 'Cost Structure',
+      rev: 'Revenue Streams'
+    },
+    zones: {
+      feasibility: 'Feasibility',
+      desirability: 'Desirability',
+      viability: 'Viability'
+    }
+  }
+};
+
+export type Language = 'en' | 'id';

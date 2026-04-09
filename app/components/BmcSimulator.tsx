@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BmcData, bmcSteps } from '../types';
-import { ChevronRight, ChevronLeft, Sparkles, FileText, Download, Loader2, Target, Lightbulb, Share2, HeartHandshake, Coins, Wrench, Activity, Users, Receipt, Rocket, Save, FolderOpen, Handshake, Database, Megaphone, Heart, Settings, DollarSign, CheckCircle2 } from 'lucide-react';
+import { BmcData, bmcSteps, BmcStep } from '../types';
+import { ChevronRight, ChevronLeft, Sparkles, FileText, Download, Loader2, Target, Lightbulb, Share2, HeartHandshake, Coins, Wrench, Activity, Users, Receipt, Rocket, Save, FolderOpen, Handshake, Database, Megaphone, Heart, Settings, DollarSign, CheckCircle2, Languages } from 'lucide-react';
 import OpenAI from 'openai';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
+import { translations, Language } from '../translations';
 
 const initialBmcData: BmcData = {
   customerSegments: '',
@@ -41,6 +42,10 @@ export interface AnalysisData {
 }
 
 export default function BmcSimulator() {
+  const [language, setLanguage] = useState<Language>('id');
+  const t = translations[language];
+  const steps = bmcSteps[language];
+
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [bmcData, setBmcData] = useState<BmcData>(initialBmcData);
   const [view, setView] = useState<'wizard' | 'analysis' | 'pitch'>('wizard');
@@ -56,69 +61,130 @@ export default function BmcSimulator() {
   const [isTutorialActive, setIsTutorialActive] = useState(false);
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
 
-  const tutorialSteps = [
-    {
-      title: 'Selamat Datang di BMC Simulator!',
-      content: 'Mari kita mulai tur singkat untuk memahami cara menggunakan alat ini dan mengisi Business Model Canvas Anda.',
-      target: 'center'
-    },
-    {
-      title: 'Customer Segments',
-      content: 'Siapa pelanggan utama Anda? Di sini Anda mendefinisikan kelompok orang atau organisasi yang ingin Anda jangkau dan layani.',
-      target: 'customerSegments'
-    },
-    {
-      title: 'Value Propositions',
-      content: 'Nilai apa yang Anda berikan kepada pelanggan? Mengapa mereka harus memilih produk atau layanan Anda dibandingkan pesaing?',
-      target: 'valueProposition'
-    },
-    {
-      title: 'Channels',
-      content: 'Bagaimana Anda menjangkau Customer Segments Anda untuk menyampaikan Value Proposition? Ini mencakup saluran komunikasi, distribusi, dan penjualan.',
-      target: 'channels'
-    },
-    {
-      title: 'Customer Relationships',
-      content: 'Jenis hubungan apa yang Anda bangun dengan pelanggan Anda? Apakah personal, otomatis, atau berbasis komunitas?',
-      target: 'customerRelationships'
-    },
-    {
-      title: 'Revenue Streams',
-      content: 'Bagaimana bisnis Anda menghasilkan uang dari setiap Customer Segment? Ini adalah urat nadi bisnis Anda.',
-      target: 'revenueStreams'
-    },
-    {
-      title: 'Key Resources',
-      content: 'Aset terpenting apa yang diperlukan agar model bisnis Anda dapat berfungsi? Bisa berupa fisik, finansial, intelektual, atau manusia.',
-      target: 'keyResources'
-    },
-    {
-      title: 'Key Activities',
-      content: 'Aktivitas utama apa yang harus dilakukan perusahaan agar model bisnisnya berfungsi dengan baik?',
-      target: 'keyActivities'
-    },
-    {
-      title: 'Key Partnerships',
-      content: 'Siapa mitra utama dan pemasok Anda? Kemitraan membantu mengoptimalkan model bisnis, mengurangi risiko, atau memperoleh sumber daya.',
-      target: 'keyPartnerships'
-    },
-    {
-      title: 'Cost Structure',
-      content: 'Apa saja biaya terpenting yang muncul saat mengoperasikan model bisnis ini?',
-      target: 'costStructure'
-    },
-    {
-      title: 'AI Mentor',
-      content: 'Setelah Anda mengisi semua blok, klik tombol "Analyze Now" untuk mendapatkan analisis mendalam, skor kesehatan bisnis, dan saran strategis dari AI Mentor kami.',
-      target: 'ai-mentor-btn'
-    }
-  ];
+  const tutorialSteps = {
+    en: [
+      {
+        title: 'Welcome to BMC Simulator!',
+        content: 'Let\'s start a quick tour to understand how to use this tool and fill out your Business Model Canvas.',
+        target: 'center'
+      },
+      {
+        title: 'Customer Segments',
+        content: 'Who are your main customers? Here you define the groups of people or organizations you want to reach and serve.',
+        target: 'customerSegments'
+      },
+      {
+        title: 'Value Propositions',
+        content: 'What value do you provide to customers? Why should they choose your product or service over competitors?',
+        target: 'valueProposition'
+      },
+      {
+        title: 'Channels',
+        content: 'How do you reach your Customer Segments to deliver your Value Proposition? This includes communication, distribution, and sales channels.',
+        target: 'channels'
+      },
+      {
+        title: 'Customer Relationships',
+        content: 'What type of relationship do you build with your customers? Is it personal, automated, or community-based?',
+        target: 'customerRelationships'
+      },
+      {
+        title: 'Revenue Streams',
+        content: 'How does your business generate money from each Customer Segment? This is the lifeblood of your business.',
+        target: 'revenueStreams'
+      },
+      {
+        title: 'Key Resources',
+        content: 'What are the most important assets required to make your business model work? Can be physical, financial, intellectual, or human.',
+        target: 'keyResources'
+      },
+      {
+        title: 'Key Activities',
+        content: 'What main activities must the company perform for its business model to function well?',
+        target: 'keyActivities'
+      },
+      {
+        title: 'Key Partnerships',
+        content: 'Who are your key partners and suppliers? Partnerships help optimize business models, reduce risk, or acquire resources.',
+        target: 'keyPartnerships'
+      },
+      {
+        title: 'Cost Structure',
+        content: 'What are the most important costs incurred while operating this business model?',
+        target: 'costStructure'
+      },
+      {
+        title: 'AI Mentor',
+        content: 'Once you specify all blocks, click "Analyze Now" to get deep analysis, business health scores, and strategic advice from our AI Mentor.',
+        target: 'ai-mentor-btn'
+      }
+    ],
+    id: [
+      {
+        title: 'Selamat Datang di BMC Simulator!',
+        content: 'Mari kita mulai tur singkat untuk memahami cara menggunakan alat ini dan mengisi Business Model Canvas Anda.',
+        target: 'center'
+      },
+      {
+        title: 'Customer Segments',
+        content: 'Siapa pelanggan utama Anda? Di sini Anda mendefinisikan kelompok orang atau organisasi yang ingin Anda jangkau dan layani.',
+        target: 'customerSegments'
+      },
+      {
+        title: 'Value Propositions',
+        content: 'Nilai apa yang Anda berikan kepada pelanggan? Mengapa mereka harus memilih produk atau layanan Anda dibandingkan pesaing?',
+        target: 'valueProposition'
+      },
+      {
+        title: 'Channels',
+        content: 'Bagaimana Anda menjangkau Customer Segments Anda untuk menyampaikan Value Proposition? Ini mencakup saluran komunikasi, distribusi, dan penjualan.',
+        target: 'channels'
+      },
+      {
+        title: 'Customer Relationships',
+        content: 'Jenis hubungan apa yang Anda bangun dengan pelanggan Anda? Apakah personal, otomatis, atau berbasis komunitas?',
+        target: 'customerRelationships'
+      },
+      {
+        title: 'Revenue Streams',
+        content: 'Bagaimana bisnis Anda menghasilkan uang dari setiap Customer Segment? Ini adalah urat nadi bisnis Anda.',
+        target: 'revenueStreams'
+      },
+      {
+        title: 'Key Resources',
+        content: 'Aset terpenting apa yang diperlukan agar model bisnis Anda dapat berfungsi? Bisa berupa fisik, finansial, intelektual, atau manusia.',
+        target: 'keyResources'
+      },
+      {
+        title: 'Key Activities',
+        content: 'Aktivitas utama apa yang harus dilakukan perusahaan agar model bisnisnya berfungsi dengan baik?',
+        target: 'keyActivities'
+      },
+      {
+        title: 'Key Partnerships',
+        content: 'Siapa mitra utama dan pemasok Anda? Kemitraan membantu mengoptimalkan model bisnis, mengurangi risiko, atau memperoleh sumber daya.',
+        target: 'keyPartnerships'
+      },
+      {
+        title: 'Cost Structure',
+        content: 'Apa saja biaya terpenting yang muncul saat mengoperasikan model bisnis ini?',
+        target: 'costStructure'
+      },
+      {
+        title: 'AI Mentor',
+        content: 'Setelah Anda mengisi semua blok, klik tombol "Analyze Now" untuk mendapatkan analisis mendalam, skor kesehatan bisnis, dan saran strategis dari AI Mentor kami.',
+        target: 'ai-mentor-btn'
+      }
+    ]
+  };
+
+  const currentTutorialSteps = tutorialSteps[language];
 
   const isAllFilled = Object.values(bmcData).every(val => val.trim() !== '');
 
   const saveDraft = () => {
     localStorage.setItem('bmcDraft', JSON.stringify(bmcData));
-    setSaveMessage('Tersimpan!');
+    setSaveMessage(t.saved);
     setTimeout(() => setSaveMessage(''), 2000);
   };
 
@@ -126,18 +192,18 @@ export default function BmcSimulator() {
     const saved = localStorage.getItem('bmcDraft');
     if (saved) {
       setBmcData(JSON.parse(saved));
-      setSaveMessage('Dimuat!');
+      setSaveMessage(t.loaded);
       setTimeout(() => setSaveMessage(''), 2000);
     }
   };
 
   const handleInputChange = (value: string) => {
-    const currentStepId = bmcSteps[currentStepIndex].id;
+    const currentStepId = steps[currentStepIndex].id;
     setBmcData((prev) => ({ ...prev, [currentStepId]: value }));
   };
 
   const handleNext = () => {
-    if (currentStepIndex < bmcSteps.length - 1) {
+    if (currentStepIndex < steps.length - 1) {
       setCurrentStepIndex((prev) => prev + 1);
     } else {
       generateAnalysis();
@@ -157,10 +223,11 @@ export default function BmcSimulator() {
     try {
       const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, dangerouslyAllowBrowser: true });
       const prompt = `
-Sebagai AI Expert dan Business Expert Mentor, tolong berikan analisa mendalam terhadap Business Model Canvas berikut:
+Act as a world-class Business Strategy Consultant and Startup Mentor (e.g., a mix of Alexander Osterwalder, Eric Ries, and a top-tier VC).
+Provide a deep, critical, and highly strategic analysis of the following Business Model Canvas:
 
 1. Customer Segments: ${bmcData.customerSegments}
-2. Problem & Unfair Advantage: ${bmcData.valueProposition}
+2. Value Proposition (Problem & Unfair Advantage): ${bmcData.valueProposition}
 3. Channels: ${bmcData.channels}
 4. Customer Relationships: ${bmcData.customerRelationships}
 5. Revenue Streams: ${bmcData.revenueStreams}
@@ -169,37 +236,17 @@ Sebagai AI Expert dan Business Expert Mentor, tolong berikan analisa mendalam te
 8. Key Partnerships: ${bmcData.keyPartnerships}
 9. Cost Structure: ${bmcData.costStructure}
 
-Gunakan Panduan Evaluasi Bisnis berikut sebagai rubrik kuantitatif untuk mengubah BMC menjadi skor metrik kinerja (skala 0 hingga 100):
+Rubric for Quantitative Performance Metrics (Scale 0-100):
+- Problem-Solution Fit: [0-30] Hypothetical, [31-60] Early Traction, [61-85] Validated, [86-100] PMF.
+- Scalability: [0-30] Linear, [31-60] Limited, [61-85] High, [86-100] Exponential.
+- Defensibility (Moat): [0-30] Vulnerable, [31-60] Early Mover, [61-85] Core Competitive Advantage, [86-100] Monopoly/Network Effects.
+- Operational Fitness: [0-30] Chaotic, [31-60] Fragile, [61-85] Systematic, [86-100] Automated & Agile.
+- External Resilience: [0-30] Fragile, [31-60] Status Quo, [61-85] Adaptive, [86-100] Anti-Fragile.
 
-1. Problem-Solution Fit (Evaluasi: Value Propositions, Customer Segments)
-[0-30] Asumsi Hipotetis, [31-60] Traksi Awal, [61-85] Validasi Terbukti, [86-100] Product-Market Fit.
+Consider external forces: Market forces, Industry forces, Key trends (AI disruption, ESG, etc.), and Macroeconomic conditions.
 
-2. Scalability (Evaluasi: Revenue Streams, Cost Structure, Key Activities, Channels)
-[0-30] Sangat Linear, [31-60] Skala Terbatas, [61-85] Skalabilitas Tinggi, [86-100] Pertumbuhan Eksponensial.
-
-3. Defensibility (Evaluasi: Key Resources, Key Partnerships, Value Propositions)
-[0-30] Sangat Rentan, [31-60] Keunggulan Awal, [61-85] Keunggulan Kompetitif Inti, [86-100] Monopoli / Efek Jaringan.
-
-4. Operational Fitness (Evaluasi: Key Activities, Key Resources, Key Partnerships)
-[0-30] Kacau & Inefisien, [31-60] Berjalan Namun Rentan, [61-85] Sistematis & Optimal, [86-100] Otomatisasi Penuh & Agile.
-Pastikan Key Activities dan Key Resources secara langsung mendukung penciptaan Value Propositions. Jika ada aktivitas yang memakan waktu tapi tidak menambah nilai pada produk, identifikasi sebagai pemborosan.
-
-5. External Resilience (Evaluasi: Value Propositions, Revenue Streams, Customer Segments)
-[0-30] Sangat Rapuh, [31-60] Bertahan di Zona Nyaman, [61-85] Adaptif & Fleksibel, [86-100] Anti-Fragile.
-Pertimbangkan:
-- Kekuatan Pasar: Apakah tren permintaan konsumen bergeser menjauh dari produk ini?
-- Kekuatan Industri: Siapa pesaing baru yang menggunakan teknologi disruptif untuk merusak model harga ini?
-- Tren Utama: Apakah ada perubahan regulasi, teknologi, atau sosial yang bisa mematikan Value Proposition ini?
-- Kondisi Makroekonomi: Bagaimana resesi atau inflasi akan memengaruhi daya beli Customer Segments ini?
-- Disrupsi AI & Otomatisasi, Ekonomi Berkelanjutan (ESG), Hiper-Personalisasi, dan Pergeseran Model Konsumsi.
-
-Saran Tambahan Berbasis AI & Data: Berikan saran tambahan setelah membaca seluruh BMC dengan pendekatan berikut:
-- Validasi Pasar: Gunakan machine learning untuk menganalisis data pencarian, tren media sosial, dan analitik web.
-- Optimasi Saluran: Algoritma prediktif dapat menentukan saluran distribusi mana yang menghasilkan ROI tertinggi.
-- Penetapan Harga Dinamis: Gunakan AI untuk melakukan simulasi elastisitas harga dan menentukan titik harga optimal.
-- Efisiensi Biaya: Otomatisasi AI dapat mengambil alih tugas-tugas administratif berulang.
-
-Integrasikan hasil pemikiran di atas ke dalam output JSON yang diminta.
+IMPORTANT: Your response MUST be in ${language === 'en' ? 'English' : 'Indonesian'}. 
+Analyze the content deeply, looking for logical inconsistencies between blocks (e.g., Value Proposition doesn't match Customer Segments, or Key Activities don't support the Value Proposition).
 `;
       const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
@@ -264,11 +311,11 @@ Integrasikan hasil pemikiran di atas ke dalam output JSON yang diminta.
       if (responseText) {
         setAnalysisResult(JSON.parse(responseText));
       } else {
-        setAnalysisError('Gagal menghasilkan analisa.');
+        setAnalysisError(language === 'en' ? 'Failed to generate analysis.' : 'Gagal menghasilkan analisa.');
       }
     } catch (error) {
       console.error(error);
-      setAnalysisError('Terjadi kesalahan saat menghubungi AI Mentor.');
+      setAnalysisError(language === 'en' ? 'An error occurred while contacting AI Mentor.' : 'Terjadi kesalahan saat menghubungi AI Mentor.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -293,24 +340,19 @@ Data BMC:
 - Mitra Utama: ${bmcData.keyPartnerships}
 - Struktur Biaya: ${bmcData.costStructure}
 
-Struktur Elevator Pitch yang diharapkan:
-1. Hook (Menarik perhatian dengan masalah/fakta mengejutkan)
-2. Problem (Masalah spesifik yang dialami target pasar)
-3. Solution & Unfair Advantage (Solusi yang ditawarkan dan kenapa kita yang terbaik/sulit ditiru)
-4. Impact (Dampak positif atau hasil nyata yang dirasakan oleh pengguna/pelanggan setelah menggunakan solusi)
-5. Market & Traction/Revenue (Siapa pasarnya dan bagaimana cara kita menghasilkan uang)
-6. Call to Action (Ajakan bertindak yang jelas di akhir pitch, misal: investasi, kemitraan, atau mencoba produk)
+Structure: 1. Hook, 2. Problem, 3. Solution & Unfair Advantage, 4. Impact, 5. Market & Traction, 6. Call to Action.
 
-Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gunakan format Markdown.
+Tone: Professional, persuasive, and dynamic founder. Use Markdown.
+Language: MUST be in ${language === 'en' ? 'English' : 'Indonesian'}.
 `;
       const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
       });
-      setPitchResult(response.choices[0]?.message?.content || 'Gagal menghasilkan elevator pitch.');
+      setPitchResult(response.choices[0]?.message?.content || (language === 'en' ? 'Failed to generate pitch.' : 'Gagal menghasilkan elevator pitch.'));
     } catch (error) {
       console.error(error);
-      setPitchResult('Terjadi kesalahan saat menghubungi AI Mentor.');
+      setPitchResult(language === 'en' ? 'An error occurred while contacting AI Mentor.' : 'Terjadi kesalahan saat menghubungi AI Mentor.');
     } finally {
       setIsGeneratingPitch(false);
     }
@@ -347,9 +389,9 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
     const footer = "</body></html>";
     
     const htmlContent = `
-      <h1 style="color: #203260; text-align: center;">AI Business Analysis Report</h1>
+      <h1 style="color: #203260; text-align: center;">${t.aiMentorAnalysis} Report</h1>
       
-      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">Business Vital Signs</h2>
+      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">${t.vitalSigns}</h2>
       <ul>
         <li><strong>Problem-Solution Fit:</strong> ${analysisResult.vitalSigns.problemSolutionFit}/100</li>
         <li><strong>Scalability:</strong> ${analysisResult.vitalSigns.scalability}/100</li>
@@ -358,22 +400,22 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
         <li><strong>External Resilience:</strong> ${analysisResult.vitalSigns.externalResilience}/100</li>
       </ul>
 
-      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">Strengths (Kekuatan)</h2>
+      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">${t.strengths}</h2>
       <ul>${analysisResult.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
 
-      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">Weaknesses (Kritik & Risiko)</h2>
+      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">${t.weaknesses}</h2>
       <ul>${analysisResult.weaknesses.map(s => `<li>${s}</li>`).join('')}</ul>
 
-      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">Opportunities (Peluang)</h2>
+      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">${t.opportunities}</h2>
       <ul>${analysisResult.opportunities.map(s => `<li>${s}</li>`).join('')}</ul>
 
-      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">Threats (Ancaman)</h2>
+      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">${t.threats}</h2>
       <ul>${analysisResult.threats.map(s => `<li>${s}</li>`).join('')}</ul>
 
-      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">Feedback & Saran Strategis</h2>
+      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">${t.feedback}</h2>
       <div>${analysisResult.feedback.replace(/\n/g, '<br>')}</div>
 
-      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">Kesimpulan</h2>
+      <h2 style="color: #203260; border-bottom: 2px solid #FFB03A; padding-bottom: 5px;">${t.conclusion}</h2>
       <div>${analysisResult.conclusion.replace(/\n/g, '<br>')}</div>
     `;
 
@@ -396,35 +438,35 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
       <table border="1" cellpadding="10" cellspacing="0" width="100%">
         <tr>
           <td colspan="2" rowspan="2" width="20%" valign="top">
-            <b>Key Partnerships</b><br><br>${bmcData.keyPartnerships.replace(/\n/g, '<br>')}
+            <b>${t.canvasLabels.kp}</b><br><br>${bmcData.keyPartnerships.replace(/\n/g, '<br>')}
           </td>
           <td colspan="2" width="20%" valign="top">
-            <b>Key Activities</b><br><br>${bmcData.keyActivities.replace(/\n/g, '<br>')}
+            <b>${t.canvasLabels.ka}</b><br><br>${bmcData.keyActivities.replace(/\n/g, '<br>')}
           </td>
           <td colspan="2" rowspan="2" width="20%" valign="top">
-            <b>Value Propositions</b><br><br>${bmcData.valueProposition.replace(/\n/g, '<br>')}
+            <b>${t.canvasLabels.vp}</b><br><br>${bmcData.valueProposition.replace(/\n/g, '<br>')}
           </td>
           <td colspan="2" width="20%" valign="top">
-            <b>Customer Relationships</b><br><br>${bmcData.customerRelationships.replace(/\n/g, '<br>')}
+            <b>${t.canvasLabels.cr}</b><br><br>${bmcData.customerRelationships.replace(/\n/g, '<br>')}
           </td>
           <td colspan="2" rowspan="2" width="20%" valign="top">
-            <b>Customer Segments</b><br><br>${bmcData.customerSegments.replace(/\n/g, '<br>')}
+            <b>${t.canvasLabels.cs}</b><br><br>${bmcData.customerSegments.replace(/\n/g, '<br>')}
           </td>
         </tr>
         <tr>
           <td colspan="2" width="20%" valign="top">
-            <b>Key Resources</b><br><br>${bmcData.keyResources.replace(/\n/g, '<br>')}
+            <b>${t.canvasLabels.kr}</b><br><br>${bmcData.keyResources.replace(/\n/g, '<br>')}
           </td>
           <td colspan="2" width="20%" valign="top">
-            <b>Channels</b><br><br>${bmcData.channels.replace(/\n/g, '<br>')}
+            <b>${t.canvasLabels.ch}</b><br><br>${bmcData.channels.replace(/\n/g, '<br>')}
           </td>
         </tr>
         <tr>
           <td colspan="5" width="50%" valign="top">
-            <b>Cost Structure</b><br><br>${bmcData.costStructure.replace(/\n/g, '<br>')}
+            <b>${t.canvasLabels.cost}</b><br><br>${bmcData.costStructure.replace(/\n/g, '<br>')}
           </td>
           <td colspan="5" width="50%" valign="top">
-            <b>Revenue Streams</b><br><br>${bmcData.revenueStreams.replace(/\n/g, '<br>')}
+            <b>${t.canvasLabels.rev}</b><br><br>${bmcData.revenueStreams.replace(/\n/g, '<br>')}
           </td>
         </tr>
       </table>
@@ -440,15 +482,15 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
     document.body.removeChild(fileDownload);
   };
 
-  const currentStep = bmcSteps[currentStepIndex];
+  const currentStep = steps[currentStepIndex];
   const Icon = stepIcons[currentStepIndex];
-  const progress = ((currentStepIndex + 1) / bmcSteps.length) * 100;
+  const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
   const renderCanvasBlock = (id: string, shortName: string, colSpan: string, rowSpan: string, IconComponent: React.ElementType, colStart?: string, rowStart?: string, tooltipPos: 'top' | 'bottom' = 'bottom', tooltipAlign: 'center' | 'left' | 'right' = 'center') => {
     const isActive = currentStep.id === id;
     const isFilled = bmcData[id as keyof BmcData] !== '';
-    const stepInfo = bmcSteps.find(s => s.id === id);
-    const isHighlighted = isTutorialActive && tutorialSteps[tutorialStepIndex].target === id;
+    const stepInfo = steps.find(s => s.id === id);
+    const isHighlighted = isTutorialActive && currentTutorialSteps[tutorialStepIndex].target === id;
     
     return (
       <div 
@@ -464,7 +506,7 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                 : 'bg-slate-50/50 border-2 border-dashed border-slate-300 hover:border-slate-400 opacity-80 hover:opacity-100 z-10'}
         `}
         onClick={() => {
-          const index = bmcSteps.findIndex(s => s.id === id);
+          const index = steps.findIndex(s => s.id === id);
           if (index !== -1) setCurrentStepIndex(index);
         }}
       >
@@ -516,17 +558,31 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
               <span className="text-sm font-bold leading-none text-[#203260] tracking-widest mt-1">ACADEMY</span>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-right">
+          <div className="flex flex-col md:flex-row items-center gap-3">
             {saveMessage && <span className="text-sm font-bold text-emerald-500 mr-2">{saveMessage}</span>}
+            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl mr-2">
+              <button 
+                onClick={() => setLanguage('id')}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${language === 'id' ? 'bg-white text-[#203260] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                ID
+              </button>
+              <button 
+                onClick={() => setLanguage('en')}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${language === 'en' ? 'bg-white text-[#203260] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                EN
+              </button>
+            </div>
             <button onClick={() => { setIsTutorialActive(true); setTutorialStepIndex(0); setView('wizard'); }} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-[#FFB03A] rounded-xl hover:bg-[#f0a02a] transition-colors shadow-md">
               <Lightbulb className="w-4 h-4" />
-              Tutorial
+              {t.tutorial}
             </button>
             <button onClick={loadDraft} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#203260] bg-white border-2 border-[#203260] rounded-xl hover:bg-slate-50 transition-colors">
-              <FolderOpen className="w-4 h-4" /> Load
+              <FolderOpen className="w-4 h-4" /> {t.load}
             </button>
             <button onClick={saveDraft} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-[#FFB03A] rounded-xl hover:bg-[#f0a02a] transition-colors">
-              <Save className="w-4 h-4" /> Save
+              <Save className="w-4 h-4" /> {t.save}
             </button>
           </div>
         </div>
@@ -546,10 +602,10 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
               <div className="w-full xl:w-[40%] bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 p-8 flex flex-col min-h-[600px]">
                 <div className="flex justify-between items-center mb-8">
                   <div className="bg-[#203260]/10 text-[#203260] text-xs font-bold px-3 py-1 rounded-md uppercase tracking-wider">
-                    Misi {currentStepIndex + 1}
+                    {t.mission} {currentStepIndex + 1}
                   </div>
                   <div className="text-xs font-medium text-slate-400 italic">
-                    Lengkapi semua blok untuk analisa
+                    {t.completeAll}
                   </div>
                 </div>
                 
@@ -585,15 +641,15 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                     className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-[#203260] disabled:opacity-0 transition-colors font-bold"
                   >
                     <ChevronLeft className="w-5 h-5" />
-                    Kembali
+                    {t.back}
                   </button>
                   <button
                     onClick={handleNext}
-                    disabled={currentStepIndex === bmcSteps.length - 1 && !isAllFilled}
-                    className={`flex items-center gap-2 px-8 py-4 bg-[#203260] text-white rounded-xl hover:bg-[#1a284c] transition-colors font-bold shadow-lg shadow-[#203260]/20 disabled:opacity-50 disabled:cursor-not-allowed ${isTutorialActive && tutorialSteps[tutorialStepIndex].target === 'ai-mentor-btn' ? 'ring-4 ring-[#FFB03A] ring-offset-4 ring-offset-white shadow-2xl scale-105 z-30 animate-pulse' : ''}`}
+                    disabled={currentStepIndex === steps.length - 1 && !isAllFilled}
+                    className={`flex items-center gap-2 px-8 py-4 bg-[#203260] text-white rounded-xl hover:bg-[#1a284c] transition-colors font-bold shadow-lg shadow-[#203260]/20 disabled:opacity-50 disabled:cursor-not-allowed ${isTutorialActive && currentTutorialSteps[tutorialStepIndex].target === 'ai-mentor-btn' ? 'ring-4 ring-[#FFB03A] ring-offset-4 ring-offset-white shadow-2xl scale-105 z-30 animate-pulse' : ''}`}
                   >
-                    {currentStepIndex === bmcSteps.length - 1 ? 'Analisa Sekarang' : 'Selanjutnya'}
-                    {currentStepIndex !== bmcSteps.length - 1 && <ChevronRight className="w-5 h-5" />}
+                    {currentStepIndex === steps.length - 1 ? t.analyzeNow : t.next}
+                    {currentStepIndex !== steps.length - 1 && <ChevronRight className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
@@ -603,42 +659,44 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                 {/* Light Canvas */}
                 <div className="bg-slate-50 rounded-[2.5rem] p-8 flex-1 min-h-[400px] shadow-inner border-2 border-slate-100 relative">
                   <div className="absolute inset-0 opacity-[0.03] rounded-[2.5rem] overflow-hidden" style={{ backgroundImage: 'radial-gradient(#203260 2px, transparent 2px)', backgroundSize: '24px 24px' }}></div>
-                  <div className="grid grid-cols-10 grid-rows-3 gap-4 h-full relative z-10">
+                  <div className="grid grid-cols-2 lg:grid-cols-10 lg:grid-rows-3 gap-2 lg:gap-4 h-full relative z-10 min-h-[500px] lg:min-h-0">
                     {/* Feasibility Zone */}
-                    <div className="col-start-1 col-end-5 row-start-1 row-end-3 rounded-3xl border-2 border-rose-200 bg-rose-100/40 relative z-0 -m-2 overflow-hidden flex items-center justify-center pointer-events-none">
+                    <div className="hidden lg:flex col-start-1 col-end-5 row-start-1 row-end-3 rounded-3xl border-2 border-rose-200 bg-rose-100/40 relative z-0 -m-2 overflow-hidden items-center justify-center pointer-events-none">
                       <div className="flex items-center gap-4 rotate-[-15deg] opacity-20">
                         <Settings className="w-12 h-12 text-rose-500" />
-                        <span className="text-4xl font-black text-rose-500 uppercase tracking-widest">Feasibility</span>
+                        <span className="text-4xl font-black text-rose-500 uppercase tracking-widest">{t.zones.feasibility}</span>
                       </div>
                     </div>
 
                     {/* Desirability Zone */}
-                    <div className="col-start-5 col-end-11 row-start-1 row-end-3 rounded-3xl border-2 border-blue-200 bg-blue-100/40 relative z-0 -m-2 overflow-hidden flex items-center justify-center pointer-events-none">
+                    <div className="hidden lg:flex col-start-5 col-end-11 row-start-1 row-end-3 rounded-3xl border-2 border-blue-200 bg-blue-100/40 relative z-0 -m-2 overflow-hidden items-center justify-center pointer-events-none">
                       <div className="flex items-center gap-4 rotate-[-15deg] opacity-20">
                         <Heart className="w-12 h-12 text-blue-500" />
-                        <span className="text-4xl font-black text-blue-500 uppercase tracking-widest">Desirability</span>
+                        <span className="text-4xl font-black text-blue-500 uppercase tracking-widest">{t.zones.desirability}</span>
                       </div>
                     </div>
 
                     {/* Viability Zone */}
-                    <div className="col-start-1 col-end-11 row-start-3 row-end-4 rounded-3xl border-2 border-slate-300 bg-slate-200/40 relative z-0 -m-2 overflow-hidden flex items-center justify-center pointer-events-none">
+                    <div className="hidden lg:flex col-start-1 col-end-11 row-start-3 row-end-4 rounded-3xl border-2 border-slate-300 bg-slate-200/40 relative z-0 -m-2 overflow-hidden items-center justify-center pointer-events-none">
                       <div className="flex items-center gap-4 opacity-20">
                         <DollarSign className="w-12 h-12 text-slate-500" />
-                        <span className="text-4xl font-black text-slate-500 uppercase tracking-widest">Viability</span>
+                        <span className="text-4xl font-black text-slate-500 uppercase tracking-widest">{t.zones.viability}</span>
                       </div>
                     </div>
 
-                    {renderCanvasBlock('keyPartnerships', 'KP', 'col-span-2', 'row-span-2', Handshake, 'col-start-1', 'row-start-1', 'bottom', 'left')}
-                    {renderCanvasBlock('keyActivities', 'KA', 'col-span-2', 'row-span-1', Activity, 'col-start-3', 'row-start-1', 'bottom')}
-                    {renderCanvasBlock('valueProposition', 'VP', 'col-span-2', 'row-span-2', Sparkles, 'col-start-5', 'row-start-1', 'bottom')}
-                    {renderCanvasBlock('customerRelationships', 'CR', 'col-span-2', 'row-span-1', HeartHandshake, 'col-start-7', 'row-start-1', 'bottom')}
-                    {renderCanvasBlock('customerSegments', 'CS', 'col-span-2', 'row-span-2', Users, 'col-start-9', 'row-start-1', 'bottom', 'right')}
+                    {/* Mobile Only Header labels could be added here if needed, but for now we focus on layout */}
                     
-                    {renderCanvasBlock('keyResources', 'KR', 'col-span-2', 'row-span-1', Database, 'col-start-3', 'row-start-2', 'bottom')}
-                    {renderCanvasBlock('channels', 'CH', 'col-span-2', 'row-span-1', Megaphone, 'col-start-7', 'row-start-2', 'bottom')}
+                    {renderCanvasBlock('keyPartnerships', 'KP', 'col-span-2 lg:col-span-2', 'row-span-1 lg:row-span-2', Handshake, 'lg:col-start-1', 'lg:row-start-1', 'bottom', 'left')}
+                    {renderCanvasBlock('keyActivities', 'KA', 'col-span-1 lg:col-span-2', 'row-span-1 lg:row-span-1', Activity, 'lg:col-start-3', 'lg:row-start-1', 'bottom')}
+                    {renderCanvasBlock('valueProposition', 'VP', 'col-span-2 lg:col-span-2', 'row-span-1 lg:row-span-2', Sparkles, 'lg:col-start-5', 'lg:row-start-1', 'bottom')}
+                    {renderCanvasBlock('customerRelationships', 'CR', 'col-span-1 lg:col-span-2', 'row-span-1 lg:row-span-1', HeartHandshake, 'lg:col-start-7', 'lg:row-start-1', 'bottom')}
+                    {renderCanvasBlock('customerSegments', 'CS', 'col-span-2 lg:col-span-2', 'row-span-1 lg:row-span-2', Users, 'lg:col-start-9', 'lg:row-start-1', 'bottom', 'right')}
                     
-                    {renderCanvasBlock('costStructure', 'COST', 'col-span-5', 'row-span-1', Receipt, 'col-start-1', 'row-start-3', 'top', 'left')}
-                    {renderCanvasBlock('revenueStreams', 'REV', 'col-span-5', 'row-span-1', Coins, 'col-start-6', 'row-start-3', 'top', 'right')}
+                    {renderCanvasBlock('keyResources', 'KR', 'col-span-1 lg:col-span-2', 'row-span-1 lg:row-span-1', Database, 'lg:col-start-3', 'lg:row-start-2', 'bottom')}
+                    {renderCanvasBlock('channels', 'CH', 'col-span-1 lg:col-span-2', 'row-span-1 lg:row-span-1', Megaphone, 'lg:col-start-7', 'lg:row-start-2', 'bottom')}
+                    
+                    {renderCanvasBlock('costStructure', 'COST', 'col-span-2 lg:col-span-5', 'row-span-1 lg:row-span-1', Receipt, 'lg:col-start-1', 'lg:row-start-3', 'top', 'left')}
+                    {renderCanvasBlock('revenueStreams', 'REV', 'col-span-2 lg:col-span-5', 'row-span-1 lg:row-span-1', Coins, 'lg:col-start-6', 'lg:row-start-3', 'top', 'right')}
                   </div>
                 </div>
 
@@ -648,7 +706,7 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                     <Lightbulb className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-black text-[#203260] text-lg mb-2">Kunci Misi Ini:</h3>
+                    <h3 className="font-black text-[#203260] text-lg mb-2">{t.keyMission}</h3>
                     <p className="text-slate-500 leading-relaxed">
                       {currentStep.hint}
                     </p>
@@ -673,16 +731,16 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                     <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
                       <Sparkles className="w-6 h-6 text-[#FFB03A]" />
                     </div>
-                    <h2 className="text-3xl font-black">Analisa AI Mentor</h2>
+                    <h2 className="text-3xl font-black">{t.aiMentorAnalysis}</h2>
                   </div>
-                  <p className="text-slate-300 text-lg relative z-10">Berikut adalah feedback komprehensif untuk model bisnis Anda.</p>
+                  <p className="text-slate-300 text-lg relative z-10">{t.analysisDescription}</p>
                 </div>
                 
                 <div className="p-10">
                   {isAnalyzing ? (
                     <div className="flex flex-col items-center justify-center py-12 text-slate-400">
                       <Loader2 className="w-12 h-12 animate-spin mb-4 text-[#FFB03A]" />
-                      <p className="font-bold">AI Mentor sedang menganalisa model bisnis Anda...</p>
+                      <p className="font-bold">{t.analyzing}</p>
                     </div>
                   ) : analysisError ? (
                     <div className="text-red-500 font-bold text-center py-12">{analysisError}</div>
@@ -693,7 +751,7 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                         <div className="absolute right-0 top-0 opacity-5 pointer-events-none">
                           <Activity className="w-64 h-64 -mt-12 -mr-12" />
                         </div>
-                        <h3 className="text-2xl font-black mb-8 relative z-10">Business Vital Signs</h3>
+                        <h3 className="text-2xl font-black mb-8 relative z-10">{t.vitalSigns}</h3>
                         
                         <div className="space-y-6 relative z-10">
                           <div>
@@ -778,7 +836,7 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                         <div>
                           <div className="flex items-center gap-3 mb-6">
                             <div className="w-2 h-8 bg-emerald-500 rounded-full"></div>
-                            <h3 className="text-xl font-black text-[#203260]">Kekuatan (Strengths)</h3>
+                            <h3 className="text-xl font-black text-[#203260]">{t.strengths}</h3>
                           </div>
                           <ul className="space-y-4">
                             {analysisResult.strengths.map((str, i) => (
@@ -792,7 +850,7 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                         <div>
                           <div className="flex items-center gap-3 mb-6">
                             <div className="w-2 h-8 bg-rose-500 rounded-full"></div>
-                            <h3 className="text-xl font-black text-[#203260]">Kritik & Risiko (Weaknesses)</h3>
+                            <h3 className="text-xl font-black text-[#203260]">{t.weaknesses}</h3>
                           </div>
                           <ul className="space-y-4">
                             {analysisResult.weaknesses.map((wk, i) => (
@@ -810,7 +868,7 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                         <div>
                           <div className="flex items-center gap-3 mb-6">
                             <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
-                            <h3 className="text-xl font-black text-[#203260]">Peluang (Opportunities)</h3>
+                            <h3 className="text-xl font-black text-[#203260]">{t.opportunities}</h3>
                           </div>
                           <ul className="space-y-4">
                             {analysisResult.opportunities.map((opp, i) => (
@@ -824,7 +882,7 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                         <div>
                           <div className="flex items-center gap-3 mb-6">
                             <div className="w-2 h-8 bg-amber-500 rounded-full"></div>
-                            <h3 className="text-xl font-black text-[#203260]">Ancaman (Threats)</h3>
+                            <h3 className="text-xl font-black text-[#203260]">{t.threats}</h3>
                           </div>
                           <ul className="space-y-4">
                             {analysisResult.threats.map((thr, i) => (
@@ -839,14 +897,14 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
 
                       {/* Feedback & Conclusion */}
                       <div className="bg-slate-50 rounded-3xl p-8 border-2 border-slate-100">
-                        <h3 className="text-xl font-black text-[#203260] mb-4">Feedback & Saran Strategis</h3>
+                        <h3 className="text-xl font-black text-[#203260] mb-4">{t.feedback}</h3>
                         <div className="prose prose-slate max-w-none prose-headings:font-black prose-h3:text-[#203260] prose-a:text-[#FFB03A]">
                           <ReactMarkdown>{analysisResult.feedback}</ReactMarkdown>
                         </div>
                       </div>
 
                       <div className="bg-[#FFB03A]/10 rounded-3xl p-8 border-2 border-[#FFB03A]/20">
-                        <h3 className="text-xl font-black text-[#203260] mb-4">Kesimpulan</h3>
+                        <h3 className="text-xl font-black text-[#203260] mb-4">{t.conclusion}</h3>
                         <div className="prose prose-slate max-w-none prose-headings:font-black prose-h3:text-[#203260] prose-a:text-[#FFB03A]">
                           <ReactMarkdown>{analysisResult.conclusion}</ReactMarkdown>
                         </div>
@@ -861,7 +919,7 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                     className="px-6 py-3 text-slate-500 hover:text-[#203260] font-bold transition-colors flex items-center gap-2"
                   >
                     <ChevronLeft className="w-5 h-5" />
-                    Kembali ke Editor
+                    {t.back}
                   </button>
                   <div className="flex gap-4">
                     <button
@@ -869,7 +927,7 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                       className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-[#203260] text-[#203260] rounded-xl hover:bg-slate-50 transition-colors font-bold shadow-sm"
                     >
                       <Download className="w-5 h-5" />
-                      Export Analisa (.doc)
+                      {t.exportDoc} (.doc)
                     </button>
                     <button
                       onClick={exportBmcToDoc}
@@ -884,7 +942,7 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                       className="flex items-center gap-2 px-8 py-3 bg-[#FFB03A] text-white rounded-xl hover:bg-[#f0a02a] transition-colors font-bold shadow-lg shadow-[#FFB03A]/30 disabled:opacity-70"
                     >
                       {isGeneratingPitch ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileText className="w-5 h-5" />}
-                      {isGeneratingPitch ? 'Menyusun Pitch...' : 'Buat Elevator Pitch'}
+                      {isGeneratingPitch ? t.generatingPitch : t.goPitch}
                     </button>
                   </div>
                 </div>
@@ -907,9 +965,9 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                     <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
                       <FileText className="w-6 h-6 text-[#FFB03A]" />
                     </div>
-                    <h2 className="text-3xl font-black">Elevator Pitch Anda</h2>
+                    <h2 className="text-3xl font-black">{t.elevatorPitch}</h2>
                   </div>
-                  <p className="text-slate-300 text-lg relative z-10">Siap untuk memukau investor dan calon pelanggan dalam 60 detik!</p>
+                  <p className="text-slate-300 text-lg relative z-10">{t.pitchDescription}</p>
                 </div>
                 
                 <div className="p-10 prose prose-slate max-w-none prose-headings:font-black prose-h3:text-[#203260]">
@@ -921,14 +979,14 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
                     onClick={() => setView('analysis')}
                     className="px-6 py-3 text-slate-500 hover:text-[#203260] font-bold transition-colors"
                   >
-                    Kembali ke Analisa
+                    {t.back}
                   </button>
                   <button
                     onClick={exportPitchToDoc}
                     className="flex items-center gap-2 px-8 py-3 bg-[#FFB03A] text-white rounded-xl hover:bg-[#f0a02a] transition-colors font-bold shadow-lg shadow-[#FFB03A]/30"
                   >
                     <Download className="w-5 h-5" />
-                    Export ke Google Docs (.doc)
+                    {t.exportDoc} (.doc)
                   </button>
                 </div>
               </div>
@@ -941,30 +999,30 @@ Gunakan bahasa Indonesia yang profesional namun dinamis ala startup founder. Gun
           <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm pointer-events-auto" onClick={() => setIsTutorialActive(false)}></div>
             <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl relative z-[110] pointer-events-auto border border-slate-100">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-[#FFB03A]/20 rounded-full flex items-center justify-center">
-                  <Lightbulb className="w-5 h-5 text-[#FFB03A]" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-[#FFB03A]/20 rounded-full flex items-center justify-center">
+                    <Lightbulb className="w-5 h-5 text-[#FFB03A]" />
+                  </div>
+                  <h3 className="text-2xl font-black text-[#203260]">{currentTutorialSteps[tutorialStepIndex].title}</h3>
                 </div>
-                <h3 className="text-2xl font-black text-[#203260]">{tutorialSteps[tutorialStepIndex].title}</h3>
-              </div>
-              <p className="text-slate-600 mb-8 leading-relaxed text-lg">{tutorialSteps[tutorialStepIndex].content}</p>
-              <div className="flex justify-between items-center">
-                <div className="flex gap-1.5">
-                  {tutorialSteps.map((_, i) => (
-                    <div key={i} className={`w-2 h-2 rounded-full transition-all duration-300 ${i === tutorialStepIndex ? 'bg-[#FFB03A] w-6' : 'bg-slate-200'}`} />
-                  ))}
+                <p className="text-slate-600 mb-8 leading-relaxed text-lg">{currentTutorialSteps[tutorialStepIndex].content}</p>
+                <div className="flex justify-between items-center">
+                  <div className="flex gap-1.5">
+                    {currentTutorialSteps.map((_, i) => (
+                      <div key={i} className={`w-2 h-2 rounded-full transition-all duration-300 ${i === tutorialStepIndex ? 'bg-[#FFB03A] w-6' : 'bg-slate-200'}`} />
+                    ))}
+                  </div>
+                  <div className="flex gap-3">
+                    {tutorialStepIndex > 0 && (
+                      <button onClick={() => setTutorialStepIndex(prev => prev - 1)} className="px-4 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-colors">{t.back}</button>
+                    )}
+                    {tutorialStepIndex < currentTutorialSteps.length - 1 ? (
+                      <button onClick={() => setTutorialStepIndex(prev => prev + 1)} className="px-6 py-2 bg-[#203260] text-white font-bold rounded-xl hover:bg-1a284d transition-colors shadow-md">{t.next}</button>
+                    ) : (
+                      <button onClick={() => { setIsTutorialActive(false); setTutorialStepIndex(0); }} className="px-6 py-2 bg-[#FFB03A] text-white font-bold rounded-xl hover:bg-[#f0a02a] transition-colors shadow-md">{language === 'en' ? 'Finish' : 'Selesai'}</button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                  {tutorialStepIndex > 0 && (
-                    <button onClick={() => setTutorialStepIndex(prev => prev - 1)} className="px-4 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-colors">Kembali</button>
-                  )}
-                  {tutorialStepIndex < tutorialSteps.length - 1 ? (
-                    <button onClick={() => setTutorialStepIndex(prev => prev + 1)} className="px-6 py-2 bg-[#203260] text-white font-bold rounded-xl hover:bg-[#1a284d] transition-colors shadow-md">Lanjut</button>
-                  ) : (
-                    <button onClick={() => { setIsTutorialActive(false); setTutorialStepIndex(0); }} className="px-6 py-2 bg-[#FFB03A] text-white font-bold rounded-xl hover:bg-[#f0a02a] transition-colors shadow-md">Selesai</button>
-                  )}
-                </div>
-              </div>
               <button onClick={() => { setIsTutorialActive(false); setTutorialStepIndex(0); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
