@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback, startTransition } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BmcData, bmcSteps, BmcStep } from '../types';
+import { BmcData, bmcSteps, BmcStep, BmcStepId } from '../types';
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -103,6 +103,106 @@ const downloadWordDoc = (filename: string, title: string, bodyHtml: string) => {
   link.click();
   document.body.removeChild(link);
 };
+
+const stepIndexMap: Record<BmcStepId, number> = {
+  customerSegments: 0,
+  valueProposition: 1,
+  channels: 2,
+  customerRelationships: 3,
+  revenueStreams: 4,
+  keyResources: 5,
+  keyActivities: 6,
+  keyPartnerships: 7,
+  costStructure: 8,
+};
+
+interface CanvasCardProps {
+  id: BmcStepId;
+  shortName: string;
+  stepInfo?: BmcStep;
+  colSpan: string;
+  rowSpan: string;
+  colStart?: string;
+  rowStart?: string;
+  tooltipPos?: 'top' | 'bottom';
+  tooltipAlign?: 'center' | 'left' | 'right';
+  IconComponent: React.ElementType;
+  isActive: boolean;
+  isFilled: boolean;
+  isHighlighted: boolean;
+  onSelect: () => void;
+}
+
+const CanvasCard = React.memo(function CanvasCard({
+  shortName,
+  stepInfo,
+  colSpan,
+  rowSpan,
+  colStart,
+  rowStart,
+  tooltipPos = 'bottom',
+  tooltipAlign = 'center',
+  IconComponent,
+  isActive,
+  isFilled,
+  isHighlighted,
+  onSelect,
+}: CanvasCardProps) {
+  return (
+    <button
+      type="button"
+      aria-label={stepInfo?.title || shortName}
+      onClick={onSelect}
+      className={`
+        group relative rounded-xl flex flex-col items-center justify-center transition duration-200 cursor-pointer gap-2 p-3 text-left min-h-[72px] sm:min-h-[90px]
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#203260] dark:focus-visible:ring-amber-400 focus-visible:ring-offset-2
+        hover:z-50 focus-visible:z-50 focus-within:z-50
+        ${colSpan} ${rowSpan} ${colStart || ''} ${rowStart || ''}
+        ${isHighlighted 
+          ? 'bg-white dark:bg-slate-900 ring-4 ring-[#FFB03A] shadow-2xl scale-105 z-30 animate-pulse'
+          : isActive 
+            ? 'bg-amber-50/50 dark:bg-amber-950/30 ring-4 ring-[#FFB03A] shadow-lg scale-[1.02] z-20 border-2 border-[#FFB03A]' 
+            : isFilled 
+              ? 'bg-white dark:bg-slate-900 border-2 border-[#203260] dark:border-slate-700 shadow-sm hover:shadow-md z-10' 
+              : 'bg-white/80 dark:bg-slate-900/60 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-slate-500 z-10'}
+      `}
+    >
+      {isFilled && !isActive && (
+        <div className="absolute top-2 right-2 text-emerald-600 dark:text-emerald-400">
+          <CheckCircle2 className="w-4 h-4" />
+        </div>
+      )}
+      <IconComponent className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? 'text-[#FFB03A]' : isFilled ? 'text-[#203260] dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`} />
+      <span className={`font-bold text-xs sm:text-sm ${isActive || isFilled ? 'text-[#203260] dark:text-slate-100' : 'text-slate-600 dark:text-slate-300'}`}>
+        {shortName}
+      </span>
+
+      {stepInfo && (
+        <div 
+          onClick={(e) => e.stopPropagation()}
+          className={`
+            hidden md:block absolute w-64 p-4 bg-[#203260] dark:bg-slate-900 text-white rounded-xl shadow-2xl border border-white/15 dark:border-slate-700
+            opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-visible:opacity-100 group-focus-visible:visible
+            transition-all duration-150 z-50 pointer-events-auto cursor-default text-left
+            ${tooltipPos === 'bottom' 
+              ? 'top-full mt-2 before:absolute before:-top-2 before:left-0 before:right-0 before:h-2 before:content-[""]' 
+              : 'bottom-full mb-2 after:absolute after:-bottom-2 after:left-0 after:right-0 after:h-2 after:content-[""]'}
+            ${tooltipAlign === 'center' ? 'left-1/2 -translate-x-1/2' : tooltipAlign === 'left' ? 'left-0' : 'right-0'}
+          `}
+        >
+          <div className={`absolute w-3 h-3 bg-[#203260] dark:bg-slate-900 rotate-45 pointer-events-none
+            ${tooltipPos === 'bottom' ? '-top-1.5 border-t border-l border-white/15 dark:border-slate-700' : '-bottom-1.5 border-b border-r border-white/15 dark:border-slate-700'}
+            ${tooltipAlign === 'center' ? 'left-1/2 -translate-x-1/2' : tooltipAlign === 'left' ? 'left-6' : 'right-6'}
+          `}></div>
+          <h4 className="font-bold text-[#FFB03A] mb-1 text-sm tracking-wide">{stepInfo.title}</h4>
+          <p className="text-xs text-slate-200 mb-2 leading-relaxed">&quot;{stepInfo.question}&quot;</p>
+          <div className="h-px w-full bg-white/15 dark:bg-slate-700/60 mb-2"></div>
+          <p className="text-xs text-slate-300 leading-relaxed"><span className="font-bold text-white">Hint:</span> {stepInfo.hint}</p>
+        </div>
+      )}
+    </button>
+  );
+});
 
 export default function BmcSimulator() {
   const [language, setLanguage] = useState<Language>('id');
@@ -211,6 +311,16 @@ export default function BmcSimulator() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isTutorialActive, showSaveModal, showLoadModal]);
 
+  const selectStep = useCallback((index: number) => {
+    startTransition(() => {
+      setCurrentStepIndex((prev) => (prev === index ? prev : index));
+    });
+  }, []);
+
+  const stepSelectHandlers = useMemo(() => {
+    return [0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => () => selectStep(idx));
+  }, [selectStep]);
+
   const handleInputChange = (value: string) => {
     const currentStepId = steps[currentStepIndex].id;
     setBmcData((prev: BmcData) => ({ ...prev, [currentStepId]: value }));
@@ -218,7 +328,7 @@ export default function BmcSimulator() {
 
   const handleNext = () => {
     if (currentStepIndex < steps.length - 1) {
-      setCurrentStepIndex((prev: number) => prev + 1);
+      selectStep(currentStepIndex + 1);
     } else {
       generateAnalysis();
     }
@@ -226,7 +336,7 @@ export default function BmcSimulator() {
 
   const handleBack = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex((prev: number) => prev - 1);
+      selectStep(currentStepIndex - 1);
     }
   };
 
@@ -427,7 +537,7 @@ export default function BmcSimulator() {
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
   const renderCanvasBlock = (
-    id: string, 
+    id: BmcStepId, 
     shortName: string, 
     colSpan: string, 
     rowSpan: string, 
@@ -437,76 +547,25 @@ export default function BmcSimulator() {
     tooltipPos: 'top' | 'bottom' = 'bottom', 
     tooltipAlign: 'center' | 'left' | 'right' = 'center'
   ) => {
-    const isActive = currentStep.id === id;
-    const isFilled = bmcData[id as keyof BmcData] !== '';
-    const stepInfo = steps.find((s: BmcStep) => s.id === id);
-    const isHighlighted = isTutorialActive && currentTutorialSteps[tutorialStepIndex].target === id;
-    
+    const stepIdx = stepIndexMap[id];
     return (
-      <button
-        type="button"
-        role="button"
-        tabIndex={0}
-        aria-label={stepInfo?.title || shortName}
-        onKeyDown={(e: React.KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            const index = steps.findIndex((s: BmcStep) => s.id === id);
-            if (index !== -1) setCurrentStepIndex(index);
-          }
-        }}
-        onClick={() => {
-          const index = steps.findIndex((s: BmcStep) => s.id === id);
-          if (index !== -1) setCurrentStepIndex(index);
-        }}
-        className={`
-          group relative rounded-xl flex flex-col items-center justify-center transition duration-200 cursor-pointer gap-2 p-3 text-left min-h-[72px] sm:min-h-[90px]
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#203260] dark:focus-visible:ring-amber-400 focus-visible:ring-offset-2
-          hover:z-50 focus-visible:z-50 focus-within:z-50
-          ${colSpan} ${rowSpan} ${colStart || ''} ${rowStart || ''}
-          ${isHighlighted 
-            ? 'bg-white dark:bg-slate-900 ring-4 ring-[#FFB03A] shadow-2xl scale-105 z-30 animate-pulse'
-            : isActive 
-              ? 'bg-amber-50/50 dark:bg-amber-950/30 ring-4 ring-[#FFB03A] shadow-lg scale-[1.02] z-20 border-2 border-[#FFB03A]' 
-              : isFilled 
-                ? 'bg-white dark:bg-slate-900 border-2 border-[#203260] dark:border-slate-700 shadow-sm hover:shadow-md z-10' 
-                : 'bg-white/80 dark:bg-slate-900/60 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-slate-500 z-10'}
-        `}
-      >
-        {isFilled && !isActive && (
-          <div className="absolute top-2 right-2 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="w-4 h-4" />
-          </div>
-        )}
-        <IconComponent className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? 'text-[#FFB03A]' : isFilled ? 'text-[#203260] dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`} />
-        <span className={`font-bold text-xs sm:text-sm ${isActive || isFilled ? 'text-[#203260] dark:text-slate-100' : 'text-slate-600 dark:text-slate-300'}`}>
-          {shortName}
-        </span>
-
-        {stepInfo && (
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            className={`
-              hidden md:block absolute w-64 p-4 bg-[#203260] dark:bg-slate-900 text-white rounded-xl shadow-2xl border border-white/15 dark:border-slate-700
-              opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-visible:opacity-100 group-focus-visible:visible
-              transition-all duration-150 z-50 pointer-events-auto cursor-default text-left
-              ${tooltipPos === 'bottom' 
-                ? 'top-full mt-2 before:absolute before:-top-2 before:left-0 before:right-0 before:h-2 before:content-[""]' 
-                : 'bottom-full mb-2 after:absolute after:-bottom-2 after:left-0 after:right-0 after:h-2 after:content-[""]'}
-              ${tooltipAlign === 'center' ? 'left-1/2 -translate-x-1/2' : tooltipAlign === 'left' ? 'left-0' : 'right-0'}
-            `}
-          >
-            <div className={`absolute w-3 h-3 bg-[#203260] dark:bg-slate-900 rotate-45 pointer-events-none
-              ${tooltipPos === 'bottom' ? '-top-1.5 border-t border-l border-white/15 dark:border-slate-700' : '-bottom-1.5 border-b border-r border-white/15 dark:border-slate-700'}
-              ${tooltipAlign === 'center' ? 'left-1/2 -translate-x-1/2' : tooltipAlign === 'left' ? 'left-6' : 'right-6'}
-            `}></div>
-            <h4 className="font-bold text-[#FFB03A] mb-1 text-sm tracking-wide">{stepInfo.title}</h4>
-            <p className="text-xs text-slate-200 mb-2 leading-relaxed">&quot;{stepInfo.question}&quot;</p>
-            <div className="h-px w-full bg-white/15 dark:bg-slate-700/60 mb-2"></div>
-            <p className="text-xs text-slate-300 leading-relaxed"><span className="font-bold text-white">Hint:</span> {stepInfo.hint}</p>
-          </div>
-        )}
-      </button>
+      <CanvasCard
+        key={id}
+        id={id}
+        shortName={shortName}
+        stepInfo={steps[stepIdx]}
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        colStart={colStart}
+        rowStart={rowStart}
+        tooltipPos={tooltipPos}
+        tooltipAlign={tooltipAlign}
+        IconComponent={IconComponent}
+        isActive={currentStepIndex === stepIdx}
+        isFilled={bmcData[id].trim() !== ''}
+        isHighlighted={isTutorialActive && currentTutorialSteps[tutorialStepIndex].target === id}
+        onSelect={stepSelectHandlers[stepIdx]}
+      />
     );
   };
 
@@ -622,11 +681,9 @@ export default function BmcSimulator() {
                 </div>
                 
                 <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full mb-6 overflow-hidden">
-                  <motion.div 
-                    className="h-full bg-[#FFB03A]"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.3 }}
+                  <div 
+                    className="h-full bg-[#FFB03A] rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${progress}%` }}
                   />
                 </div>
 
