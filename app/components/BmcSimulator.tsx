@@ -462,6 +462,7 @@ export default function BmcSimulator() {
         className={`
           group relative rounded-xl flex flex-col items-center justify-center transition duration-200 cursor-pointer gap-2 p-3 text-left min-h-[72px] sm:min-h-[90px]
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#203260] dark:focus-visible:ring-amber-400 focus-visible:ring-offset-2
+          hover:z-50 focus-visible:z-50 focus-within:z-50
           ${colSpan} ${rowSpan} ${colStart || ''} ${rowStart || ''}
           ${isHighlighted 
             ? 'bg-white dark:bg-slate-900 ring-4 ring-[#FFB03A] shadow-2xl scale-105 z-30 animate-pulse'
@@ -483,19 +484,25 @@ export default function BmcSimulator() {
         </span>
 
         {stepInfo && (
-          <div className={`
-            hidden md:block absolute w-64 p-4 bg-[#203260] dark:bg-slate-800 text-white rounded-xl shadow-2xl border border-white/10
-            opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none
-            ${tooltipPos === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'}
-            ${tooltipAlign === 'center' ? 'left-1/2 -translate-x-1/2' : tooltipAlign === 'left' ? 'left-0' : 'right-0'}
-          `}>
-            <div className={`absolute w-3 h-3 bg-[#203260] dark:bg-slate-800 rotate-45 
-              ${tooltipPos === 'bottom' ? '-top-1.5 border-t border-l border-white/10' : '-bottom-1.5 border-b border-r border-white/10'}
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`
+              hidden md:block absolute w-64 p-4 bg-[#203260] dark:bg-slate-900 text-white rounded-xl shadow-2xl border border-white/15 dark:border-slate-700
+              opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-visible:opacity-100 group-focus-visible:visible
+              transition-all duration-150 z-50 pointer-events-auto cursor-default text-left
+              ${tooltipPos === 'bottom' 
+                ? 'top-full mt-2 before:absolute before:-top-2 before:left-0 before:right-0 before:h-2 before:content-[""]' 
+                : 'bottom-full mb-2 after:absolute after:-bottom-2 after:left-0 after:right-0 after:h-2 after:content-[""]'}
+              ${tooltipAlign === 'center' ? 'left-1/2 -translate-x-1/2' : tooltipAlign === 'left' ? 'left-0' : 'right-0'}
+            `}
+          >
+            <div className={`absolute w-3 h-3 bg-[#203260] dark:bg-slate-900 rotate-45 pointer-events-none
+              ${tooltipPos === 'bottom' ? '-top-1.5 border-t border-l border-white/15 dark:border-slate-700' : '-bottom-1.5 border-b border-r border-white/15 dark:border-slate-700'}
               ${tooltipAlign === 'center' ? 'left-1/2 -translate-x-1/2' : tooltipAlign === 'left' ? 'left-6' : 'right-6'}
             `}></div>
-            <h4 className="font-bold text-[#FFB03A] mb-1 text-sm">{stepInfo.title}</h4>
+            <h4 className="font-bold text-[#FFB03A] mb-1 text-sm tracking-wide">{stepInfo.title}</h4>
             <p className="text-xs text-slate-200 mb-2 leading-relaxed">&quot;{stepInfo.question}&quot;</p>
-            <div className="h-px w-full bg-white/10 mb-2"></div>
+            <div className="h-px w-full bg-white/15 dark:bg-slate-700/60 mb-2"></div>
             <p className="text-xs text-slate-300 leading-relaxed"><span className="font-bold text-white">Hint:</span> {stepInfo.hint}</p>
           </div>
         )}
@@ -661,7 +668,7 @@ export default function BmcSimulator() {
 
               {/* Canvas Interactive Section */}
               <div className="w-full xl:w-[58%] flex flex-col gap-4 sm:gap-6">
-                <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-2xl sm:rounded-3xl p-3 sm:p-6 border border-slate-200 dark:border-slate-800 relative w-full">
+                <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-2xl sm:rounded-3xl p-3 sm:p-6 border border-slate-200 dark:border-slate-800 relative z-20 w-full">
                   <div className="grid grid-cols-2 lg:grid-cols-10 lg:grid-rows-3 gap-2 sm:gap-3 lg:gap-3.5 h-full relative z-10 min-h-[460px] lg:min-h-0">
                     <div className="hidden lg:flex col-start-1 col-end-5 row-start-1 row-end-3 rounded-2xl border-2 border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20 relative z-0 -m-1 overflow-hidden items-center justify-center pointer-events-none">
                       <div className="flex items-center gap-4 rotate-[-15deg] opacity-20">
@@ -698,7 +705,7 @@ export default function BmcSimulator() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-6 flex gap-4 items-start">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-6 flex gap-4 items-start relative z-10">
                   <div className="w-10 h-10 bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-xl flex items-center justify-center shrink-0">
                     <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   </div>
